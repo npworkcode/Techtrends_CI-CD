@@ -1,6 +1,6 @@
 import logging
-import os.path
 import sqlite3
+import os.path
 
 
 from flask import Flask, render_template, request, url_for, redirect, flash, jsonify, make_response
@@ -25,18 +25,23 @@ abort = Aborter()
 # Function to get a database connection.
 # This function connects to database with the name `database.db`
 def get_db_connection():
-    connection = sqlite3.connect('database.db')
-    connection.row_factory = sqlite3.Row
-    return connection
+    if not os.path.isfile('database.db'):
+        abort(500)
+    try:
+        connection = sqlite3.connect('database.db')
+        connection.row_factory = sqlite3.Row
+        global db_connection_count
+        db_connection_count += 1
+        return connection
+    except sqlite3.OperationalError:
+        abort(500)
 
 
 # Function to get a post using its ID
 def get_post(post_id):
-    global db_connection_count
     connection = get_db_connection()
     savedpost = connection.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
     connection.close()
-    db_connection_count += 1
     return savedpost
 
 
@@ -47,23 +52,19 @@ app.config['SECRET_KEY'] = 'your secret key'
 
 @app.route('/healthz')
 def healthcheck():
-    if not os.path.isfile('database.db'):
-        abort(500)
-    try:
-        connection = sqlite3.connect('database.db')
-        c = connection.cursor()
-        # Drop posts table to test abort(500) error
-        # c.execute('DROP table IF EXISTS posts')
-        # connection.commit()
-        c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='posts' ''')
-        if c.fetchone()[0] == 1:
-            c.close()
-            message = jsonify({'result': 'OK - healthy'})
-            logging.info('Health Check --- result: OK - healthy')
-            return make_response(message, 200)
-        else:
-            abort(500)
-    except sqlite3.OperationalError:
+    connection = get_db_connection()
+    # Drop posts table to test abort(500) error
+    # connection.execute('DROP table IF EXISTS posts')
+    # connection.commit()
+    posts_table = connection.execute(
+        ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='posts' '''
+    ).fetchone()[0]
+    connection.close()
+    if posts_table == 1:
+        message = jsonify({'result': 'OK - healthy'})
+        logging.info('Health Check --- result: OK - healthy')
+        return make_response(message, 200)
+    else:
         abort(500)
 
 
@@ -87,11 +88,9 @@ def get_metrics():
 # Define the main route of the web application
 @app.route('/')
 def index():
-    global db_connection_count
     connection = get_db_connection()
     posts = connection.execute('SELECT * FROM posts').fetchall()
     connection.close()
-    db_connection_count += 1
     return render_template('index.html', posts=posts)
 
 
@@ -129,8 +128,6 @@ def create():
             connection.execute('INSERT INTO posts (title, content) VALUES (?, ?)', (title, content))
             connection.commit()
             connection.close()
-            global db_connection_count
-            db_connection_count += 1
             logging.info('Article \"' + title + '\" created!')
             return redirect(url_for('index'))
 
