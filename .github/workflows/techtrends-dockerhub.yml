@@ -25,6 +25,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     
-    
+    - name: Docker Metadata action
+      uses: docker/metadata-action@v3
+      id: meta
+      with:
+        # List of Docker images to use as base name for tags
+        images: name/app
+        # List of tags as key-value pair attributes
+        tags: |
+          type=semver,pattern={{version}},value=v1.0.0
+        # List of custom labels
+        labels: |
+          maintainer=NigelP
+          org.opencontainers.image.title=techtrends
+          org.opencontainers.image.description=display and add new posts
+          org.opencontainers.image.vendor=npcarnival    
 
 
