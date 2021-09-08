@@ -83,7 +83,7 @@ jobs:
         # List of cache export destinations for buildx (eg. user/app:cache, type=local,dest=path/to/dir)
         cache-to: type=local,dest=/tmp/.buildx-cache
         # Build's context is the set of files located in the specified PATH or URL
-        context: ./
+        context: ./techtrends
         # Path to the Dockerfile
         file: ./Dockerfile
         # List of metadata for an image
