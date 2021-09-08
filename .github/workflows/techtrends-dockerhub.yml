@@ -1,0 +1,93 @@
+# CI Pipeline for TechTrends Python App Update to Docker Hub
+
+name: TechTrends - Package with Docker
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push for the main branch
+  push:
+    branches: 
+      - 'main'
+    tags:
+      - 'v*.*.*'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Check out repository under $GITHUB_WORKSPACE, so the CI job can access it
+      - uses: actions/checkout@v2
+
+
+      - name: Docker Metadata action
+        uses: docker/metadata-action@v3.5.0
+        id: meta
+        with:
+          # List of Docker images to use as base name for tags
+          images: name/app
+          # List of tags as key-value pair attributes
+          tags: |
+            type=semver,pattern={{version}},value=v1.0.0
+          # List of custom labels
+          labels: |
+            maintainer=NigelP
+            org.opencontainers.image.title=techtrends
+            org.opencontainers.image.description=display and add new posts
+            org.opencontainers.image.vendor=npcarnival
+          
+          
+      - name: Docker Login
+        uses: docker/login-action@v1.10.0
+        with:
+          # Username used to log against the Docker registry
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          # Password or personal access token used to log against the Docker registry
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          # Log out from the Docker registry at the end of a job
+          logout: true
+          
+      - name: Docker Setup Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1.6.0
+        
+      - name: Cache Docker Layers
+        uses: actions/cache@v2.1.6
+        with:
+          # A list of files, directories, and wildcard patterns to cache and restore
+          path: /tmp/.buildx-cache
+          # An explicit key for restoring and saving the cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+          # The chunk size used to split up large files during upload, in bytes
+          upload-chunk-size: 1024
+      
+      - name: Build and push Docker images
+        id: docker_build
+        uses: docker/build-push-action@v2.7.0
+        with:
+          # List of external cache sources for buildx (eg. user/app:cache, type=local,src=path/to/dir)
+          cache-from: type=local,src=/tmp/.buildx-cache
+          # List of cache export destinations for buildx (eg. user/app:cache, type=local,dest=path/to/dir)
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          # Build's context is the set of files located in the specified PATH or URL
+          context: ./
+          # Path to the Dockerfile
+          file: ./Dockerfile
+          push: true
+          # List of tags
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/techtrends:${{ steps.meta.outputs.tags }}
+          # Sets the target stage to build
+
+      - name: Docker Hub Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+        
