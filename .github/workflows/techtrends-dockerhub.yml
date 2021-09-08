@@ -30,10 +30,13 @@ jobs:
       id: meta
       with:
         # List of Docker images to use as base name for tags
-        images: name/app
+        images: ${{ secrets.DOCKER_HUB_USERNAME }}/techtrends
         # List of tags as key-value pair attributes
         tags: |
-          type=semver,pattern={{version}},value=v1.0.0
+          type=semver,pattern={{version}}
+        # Flavors to apply
+        flavor: |
+          latest=auto
         # List of custom labels
         labels: |
           maintainer=NigelP
