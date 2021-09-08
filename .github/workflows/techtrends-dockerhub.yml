@@ -56,7 +56,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
         # The chunk size used to split up large files during upload, in bytes
-        upload-chunk-size: 1024
+        # upload-chunk-size: 1024
         
 
     - name: Docker Login
