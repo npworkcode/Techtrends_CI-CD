@@ -51,3 +51,21 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
         # Log out from the Docker registry at the end of a job
         logout: true
+
+
+    - name: Docker Setup Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker Layers
+      uses: actions/cache@v2
+      with:
+        # A list of files, directories, and wildcard patterns to cache and restore
+        path: /tmp/.buildx-cache
+        # An explicit key for restoring and saving the cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+        # The chunk size used to split up large files during upload, in bytes
+        upload-chunk-size: 1024
