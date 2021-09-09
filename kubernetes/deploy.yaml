@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: techtrends
-        image: techtrends:latest
+        image: npcarnival/techtrends:latest
         resources:
           limits:
             memory: "128Mi"
