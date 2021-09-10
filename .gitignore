@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.db
+Nigel_Phillips*.zip
 
 # C extensions
 *.so
