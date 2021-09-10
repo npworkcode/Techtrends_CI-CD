@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: {{  .Values.namespaceName  }}
   labels:
-    app: {{  .Chart.name  }}
+    app: {{  .Chart.Name  }}
