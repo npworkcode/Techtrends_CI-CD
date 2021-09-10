@@ -14,3 +14,4 @@ spec:
       - values-staging.yaml
     path: helm/techtrendschart
     repoURL: https://github.com/npworkcode/Techtrends_CI-CD
+    targetRevision: HEAD
