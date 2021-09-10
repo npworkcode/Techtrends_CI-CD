@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{  Chart.name }}
+  name: {{  .Chart.Name }}
   namespace: {{  .Values.namespaceName  }}
 spec:
   replicas: {{  .Values.image.replicaCount  }}
   selector:
     matchLabels:
-      app: {{  Chart.name }}
+      app: {{  .Chart.Name }}
   template:
     metadata:
       labels:
-        app: {{  Chart.name }}
+        app: {{  .Chart.Name }}
     spec:
       containers:
-      - name: {{  Chart.name }}
-        image: {{  .Values.image.repository  }}/{{  .Chart.name  }}:{{  .Values.image.tag  }}
+      - name: {{  .Chart.Name }}
+        image: {{  .Values.image.repository  }}/{{  .Chart.Name  }}:{{  .Values.image.tag  }}
         imagePullPolicy: {{  .Values.image.pullPolicy  }}
         resources:
           limits:
